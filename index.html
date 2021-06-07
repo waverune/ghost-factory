@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>CryptoGhosts front-end</title>
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="web3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="cryptoghosts_abi.js"></script>
+  </head>
+  <body>
+    <div id="ghosts"></div>
+
+    <script>
+      var cryptoGhosts;
+      var userAccount;
+
+      function startApp() {
+        var cryptoGhostsAddress = "YOUR_CONTRACT_ADDRESS";
+        cryptoGhosts = new web3js.eth.Contract(cryptoGhostsABI, cryptoGhostsAddress);
+
+        var accountInterval = setInterval(function() {
+         
+          if (web3.eth.accounts[0] !== userAccount) {
+            userAccount = web3.eth.accounts[0];
+           
+            getGhostsByOwner(userAccount)
+            .then(displayGhosts);
+          }
+        }, 100);
+      }
+
+      function displayGhosts(ids) {
+        $("#ghosts").empty();
+        for (id of ids) {
+         
+          getGhostDetails(id)
+          .then(function(ghost) {
+           
+           
+            $("#ghosts").append(`<div class="ghost">
+              <ul>
+                <li>Name: ${ghost.name}</li>
+                <li>DNA: ${ghost.dna}</li>
+                <li>Level: ${ghost.level}</li>
+                <li>Wins: ${ghost.winCount}</li>
+                <li>Losses: ${ghost.lossCount}</li>
+                <li>Ready Time: ${ghost.readyTime}</li>
+              </ul>
+            </div>`);
+          });
+        }
+      }
+
+      function getGhostDetails(id) {
+        return cryptoGhosts.methods.ghosts(id).call()
+      }
+
+      function ghostToOwner(id) {
+        return cryptoGhosts.methods.ghostToOwner(id).call()
+      }
+
+      function getGhostsByOwner(owner) {
+        return cryptoGhosts.methods.getGhostsByOwner(owner).call()
+      }
+
+      window.addEventListener('load', function() {
+
+       
+        if (typeof web3 !== 'undefined') {
+         
+          web3js = new Web3(web3.currentProvider);
+        } else {
+         
+         
+        }
+
+       
+        startApp()
+
+      })
+    </script>
+  </body>
+</html>
